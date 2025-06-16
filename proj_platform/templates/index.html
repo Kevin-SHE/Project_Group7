@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>智能中药分拣平台</title>
+<style>
+    body {
+        background: #f0f2f5;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 20px;
+        min-height: 100vh;
+        margin: 0;
+    }
+    h1 {
+        margin-bottom: 30px;
+        color: #333;
+    }
+    .button-container {
+        margin-bottom: 30px;
+    }
+    button {
+        background-color: #1890ff;
+        border: none;
+        color: white;
+        padding: 12px 25px;
+        margin: 0 15px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        box-shadow: 0 4px 10px rgb(24 144 255 / 0.3);
+    }
+    button:hover {
+        background-color: #40a9ff;
+    }
+    button:active {
+        background-color: #096dd9;
+    }
+    #output {
+        width: 90%;
+        max-width: 720px;
+        min-height: 200px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgb(0 0 0 / 0.1);
+        padding: 20px;
+        font-size: 16px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        color: #444;
+        overflow-y: auto;
+        user-select: text;
+    }
+    #script-output{
+        width: 90%;
+        max-width: 720px;
+        min-height: 200px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgb(0 0 0 / 0.1);
+        padding: 20px;
+        font-size: 16px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        color: #444;
+        overflow-y: auto;
+        user-select: text;
+    }
+</style>
+</head>
+<body>
+
+<h1>智能中药分拣平台</h1>
+
+<div class="button-container">
+    <button onclick="openTrajectoryPage()">语音平台</button>
+    <button id="btnGetResult">获取识别结果</button>
+</div>
+
+<div id="output" tabindex="0" aria-label="输出区域">
+    等待操作，结果将在这里显示...
+</div>
+<div id="target-herb" style="margin-top: 20px; width: 90%; max-width: 720px; min-height: 50px; background: #fff6e5; border-radius: 8px; padding: 15px; font-size: 18px; color: #d46b08; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+    匹配到的药材目标将在这里显示...
+</div>
+<button onclick="runHerbScript()">执行脚本</button>
+<!-- 输出脚本执行结果 -->
+<div id="script-output">
+    脚本输出将在这里显示...
+</div>
+
+<script>
+const outputEl = document.getElementById('output');
+const herbEl = document.getElementById('target-herb');
+
+function appendOutput(text, isError=false) {
+    const prefix = isError ? '[错误] ' : '[信息] ';
+    outputEl.textContent = prefix + text;
+}
+
+function updateHerbOutput(herb) {
+    herbEl.textContent = herb
+        ? '目标药材：' + herb
+        : '未能从识别结果中匹配药材';
+}
+
+function openTrajectoryPage() {
+    window.open("https://www.trajectoires.cn:20394", "_blank");
+}
+
+async function fetchResult() {
+    appendOutput('正在请求识别结果...');
+    try {
+        const response = await fetch('/get_result_once');
+        const data = await response.json();
+        if (data.success) {
+            appendOutput('识别结果：\n' + data.result);
+            updateHerbOutput(data.matched_herb);
+        } else {
+            appendOutput('请求失败：' + data.message, true);
+            updateHerbOutput("");
+        }
+    } catch (err) {
+        appendOutput('请求出错：' + err.message, true);
+        updateHerbOutput("");
+    }
+}
+
+const scriptOutputEl = document.getElementById('script-output');
+
+async function runHerbScript() {
+    const herbText = herbEl.textContent.replace("目标药材：", "").trim();
+    if (!herbText) {
+        scriptOutputEl.textContent = "请先识别并匹配目标药材！";
+        return;
+    }
+
+    scriptOutputEl.textContent = "正在执行脚本，请稍候...";
+    try {
+        const response = await fetch('/run_script_by_herb', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ herb: herbText })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            scriptOutputEl.textContent = data.output || "脚本执行成功但无输出";
+        } else {
+            scriptOutputEl.textContent = "执行失败：" + data.message;
+        }
+    } catch (err) {
+        scriptOutputEl.textContent = "请求出错：" + err.message;
+    }
+}
+
+
+
+document.getElementById('btnGetResult').addEventListener('click', fetchResult);
+document.getElementById('btnRunScript').addEventListener('click', runScript);
+</script>
+
+</body>
+</html>

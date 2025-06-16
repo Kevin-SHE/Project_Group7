@@ -1,0 +1,6 @@
+#No need to open a webpage, run read_desult. py to extract the text of the speech recognition result, which is stored in the function 'result'
+#If you do not need to print the result function and only need to output the result, then change the code "print" ("new recognition result is:", result)
+#The code 'time. sleep (2)' is a polling function that runs every 2 seconds and can be modified as needed
+#When testing the results, you can use any device's browser to open the URL https://www.trajectoires.cn:20394/api/get_result Inside is the result content
+#The speech recognition website is https://www.trajectoires.cn:20394 , can be opened on any device, if the webpage cannot be opened, it means I am not running the website, call me
+#The only file running on the robotic arm is read_desult. py, and web pages can be used on any other device. The results will be synchronized to read_desult. py

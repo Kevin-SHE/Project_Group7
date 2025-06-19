@@ -1,8 +1,5 @@
 #!/usr/bin/python3
 # coding=utf8
-# Date:2024/02/05
-# Author:Aiden
-# 第13章 ArmPi FPV创意玩法课程\1.AI视觉创意玩法\第4课 物品分拣（13. ArmPi FPV creative AI application course\1. AI vision creative program\Lesson 4 object sorting)
 import cv2
 import math
 import queue
